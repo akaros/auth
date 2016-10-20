@@ -67,7 +67,7 @@ apopinit(Proto *p, Fsstate *fss)
 	State *s;
 
 	if((iscli = isclient(_strfindattr(fss->attr, "role"))) < 0)
-		return failure(fss, nil);
+		return failure(fss, NULL);
 
 	s = emalloc(sizeof *s);
 	fss->phasename = phasenames;
@@ -89,7 +89,7 @@ apopinit(Proto *p, Fsstate *fss)
 		}
 		if(dochal(s) < 0){
 			free(s);
-			return failure(fss, nil);
+			return failure(fss, NULL);
 		}
 		fss->phase = SHaveChal;
 	}
@@ -102,8 +102,8 @@ apopwrite(Fsstate *fss, void *va, uint n)
 {
 	char *a, *v;
 	int i, ret;
-	uint8_t digest[MD5dlen];
-	DigestState *ds;
+	uint8_t digest[256 / 8]; // SHA256 
+	// FIXME DigestState *ds;
 	Key *k;
 	State *s;
 	Keyinfo ki;
@@ -115,26 +115,32 @@ apopwrite(Fsstate *fss, void *va, uint n)
 		return phaseerror(fss, "write");
 
 	case CNeedChal:
-		ret = findkey(&k, mkkeyinfo(&ki, fss, nil), "%s", fss->proto->keyprompt);
+		ret = findkey(&k, mkkeyinfo(&ki, fss, NULL), "%s", fss->proto->keyprompt);
 		if(ret != RpcOk)
 			return ret;
 		v = _strfindattr(k->privattr, "!password");
-		if(v == nil)
+		if(v == NULL)
 			return failure(fss, "key has no password");
 		setattrs(fss->attr, k->attr);
 		switch(s->astype){
 		default:
 			abort();
 		case AuthCram:
+			panic("AuthCram");
+			/*
 			hmac_md5((uint8_t*)a, n, (uint8_t*)v, strlen(v),
-				digest, nil);
-			snprint(s->resp, sizeof s->resp, "%.*H", MD5dlen, digest);
+				digest, NULL);
+			snprintf(s->resp, sizeof s->resp, "%.*H", MD5dlen, digest);
+			*/
 			break;
 		case AuthApop:
-			ds = md5((uint8_t*)a, n, nil, nil);
+			panic("AuthCram");
+			/*
+			ds = md5((uint8_t*)a, n, NULL, NULL);
 			md5((uint8_t*)v, strlen(v), digest, ds);
 			for(i=0; i<MD5dlen; i++)
 				sprint(&s->resp[2*i], "%2.2x", digest[i]);
+			*/
 			break;
 		}
 		closekey(k);
@@ -150,17 +156,20 @@ apopwrite(Fsstate *fss, void *va, uint n)
 		return RpcOk;
 
 	case SNeedResp:
+		panic("md5dlen");
+		/*
 		if(n != 2*MD5dlen)
 			return failure(fss, "response not MD5 digest");
 		if(doreply(s, s->user, a) < 0){
 			fss->phase = SNeedUser;
-			return failure(fss, nil);
+			return failure(fss, NULL);
 		}
+		*/
 		fss->haveai = 1;
 		fss->ai.cuid = s->t.cuid;
 		fss->ai.suid = s->t.suid;
 		fss->ai.nsecret = 0;
-		fss->ai.secret = nil;
+		fss->ai.secret = NULL;
 		fss->phase = Established;
 		return RpcOk;
 	}
@@ -203,13 +212,13 @@ apopclose(Fsstate *fss)
 		close(s->asfd);
 		s->asfd = -1;
 	}
-	if(s->key != nil){
+	if(s->key != NULL){
 		closekey(s->key);
-		s->key = nil;
+		s->key = NULL;
 	}
-	if(s->user != nil){
+	if(s->user != NULL){
 		free(s->user);
-		s->user = nil;
+		s->user = NULL;
 	}
 	free(s);
 }
@@ -223,13 +232,13 @@ dochal(State *s)
 
 	/* send request to authentication server and get challenge */
 	/* send request to authentication server and get challenge */
-	if((dom = _strfindattr(s->key->attr, "dom")) == nil
-	|| (user = _strfindattr(s->key->attr, "user")) == nil){
+	if((dom = _strfindattr(s->key->attr, "dom")) == NULL
+	|| (user = _strfindattr(s->key->attr, "user")) == NULL){
 		werrstr("apop/dochal cannot happen");
 		goto err;
 	}
 
-	s->asfd = _authdial(nil, dom);
+	s->asfd = _authdial(NULL, dom);
 
 	/* could generate our own challenge on error here */
 	if(s->asfd < 0)
@@ -271,19 +280,23 @@ doreply(State *s, char *user, char *response)
 		goto err;
 	}
 	/* send response to auth server */
-	if(strlen(response) != MD5dlen*2){
-		werrstr("response not MD5 digest");
-		goto err;
+	panic("md5dlen?");
+	     
+	/*
+	  if(strlen(response) != MD5dlen*2){
+	  werrstr("response not MD5 digest");
+	  goto err;
+	  }
+	  if((n=write(s->asfd, response, MD5dlen*2)) != MD5dlen*2){
+	  if(n >= 0)
+	  werrstr("short write to auth server");
+	  goto err;
+	  }
+	  if(_asrdresp(s->asfd, ticket, TICKETLEN+AUTHENTLEN) < 0){
+	  /* leave connection open so we can try again *
+	return -1;
 	}
-	if((n=write(s->asfd, response, MD5dlen*2)) != MD5dlen*2){
-		if(n >= 0)
-			werrstr("short write to auth server");
-		goto err;
-	}
-	if(_asrdresp(s->asfd, ticket, TICKETLEN+AUTHENTLEN) < 0){
-		/* leave connection open so we can try again */
-		return -1;
-	}
+	*/
 	close(s->asfd);
 	s->asfd = -1;
 

@@ -34,7 +34,7 @@ wepinit(Proto* p, Fsstate *fss)
 	State *s;
 
 	/* find a key with at least one password */
-	mkkeyinfo(&ki, fss, nil);
+	mkkeyinfo(&ki, fss, NULL);
 	ret = findkey(&k, &ki, "!key1?");
 	if(ret != RpcOk)
 		ret = findkey(&k, &ki, "!key2?");
@@ -101,19 +101,19 @@ wepwrite(Fsstate *fss, void *va, uint n)
 	/* flavor it with passwords, essid, and turn on wep */
 	rv = RpcErrstr;
 	p = _strfindattr(s->key->privattr, "!key1");
-	if(p != nil)
+	if(p != NULL)
 		if(fprint(cfd, "key1 %s", p) < 0)
 			goto out;
 	p = _strfindattr(s->key->privattr, "!key2");
-	if(p != nil)
+	if(p != NULL)
 		if(fprint(cfd, "key2 %s", p) < 0)
 			goto out;
 	p = _strfindattr(s->key->privattr, "!key3");
-	if(p != nil)
+	if(p != NULL)
 		if(fprint(cfd, "key3 %s", p) < 0)
 			goto out;
 	p = _strfindattr(fss->attr, "essid");
-	if(p != nil)
+	if(p != NULL)
 		if(fprint(cfd, "essid %s", p) < 0)
 			goto out;
 	if(fprint(cfd, "crypt on") < 0)

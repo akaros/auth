@@ -49,7 +49,7 @@ prototab[] =
 	&rsa,
 	&vnc,
 	&wep,
-	nil,
+	NULL,
 };
 
 void
@@ -71,7 +71,7 @@ main(int argc, char **argv)
 	char *secstorepw;
 
 	trysecstore = 1;
-	secstorepw = nil;
+	secstorepw = NULL;
 
 	ARGBEGIN{
 	case 'D':
@@ -133,34 +133,34 @@ main(int argc, char **argv)
 		if(argc != 1)
 			usage();
 		askuser(argv[0]);
-		exits(nil);
+		exits(NULL);
 	}
 
 	for(i=0; prototab[i]; i++){
 		p = prototab[i];
-		if(p->name == nil)
+		if(p->name == NULL)
 			sysfatal("protocol %d has no name", i);
-		if(p->init == nil)
+		if(p->init == NULL)
 			sysfatal("protocol %s has no init", p->name);
-		if(p->write == nil)
+		if(p->write == NULL)
 			sysfatal("protocol %s has no write", p->name);
-		if(p->read == nil)
+		if(p->read == NULL)
 			sysfatal("protocol %s has no read", p->name);
-		if(p->close == nil)
+		if(p->close == NULL)
 			sysfatal("protocol %s has no close", p->name);
-		if(p->keyprompt == nil)
+		if(p->keyprompt == NULL)
 			p->keyprompt = "";
 	}
 
 	if(sflag){
 		s = getnvramkey(kflag ? NVwrite : NVwriteonerr, &secstorepw);
-		if(s == nil)
+		if(s == NULL)
 			fprint(2, "factotum warning: cannot read nvram: %r\n");
 		else if(ctlwrite(s, 0) < 0)
 			fprint(2, "factotum warning: cannot add nvram key: %r\n");
-		if(secstorepw != nil)
+		if(secstorepw != NULL)
 			trysecstore = 1;
-		if (s != nil) {
+		if (s != NULL) {
 			memset(s, 0, strlen(s));
 			free(s);
 		}
@@ -177,7 +177,7 @@ main(int argc, char **argv)
 				fprint(2, "factotum: secstorefetch: %r\n");
 				fprint(2, "Enter an empty password to quit.\n");
 				free(secstorepw);
-				secstorepw = nil; /* just try nvram pw once */
+				secstorepw = NULL; /* just try nvram pw once */
 			}
 		}else{
 /*
@@ -199,7 +199,7 @@ main(int argc, char **argv)
 			fprint(2, "factotum warning: cannot chmod 666 %s: %r\n", s);
 		free(s);
 	}
-	exits(nil);
+	exits(NULL);
 }
 
 char *pmsg = "Warning! %s can't protect itself from debugging: %r\n";
@@ -262,7 +262,7 @@ fsattach(Req *r)
 {
 	r->fid->qid = mkqid(QTDIR, Qroot);
 	r->ofcall.qid = r->fid->qid;
-	respond(r, nil);
+	respond(r, NULL);
 }
 
 static struct {
@@ -325,11 +325,11 @@ fswalk1(Fid *fid, char *name, Qid *qid)
 		if(strcmp(name, "factotum") == 0){
 			*qid = mkqid(QTDIR, Qfactotum);
 			fid->qid = *qid;
-			return nil;
+			return NULL;
 		}
 		if(strcmp(name, "..") == 0){
 			*qid = fid->qid;
-			return nil;
+			return NULL;
 		}
 		return "not found";
 	case Qfactotum:
@@ -337,12 +337,12 @@ fswalk1(Fid *fid, char *name, Qid *qid)
 			if(strcmp(name, dirtab[i].name) == 0){
 				*qid = mkqid(0, dirtab[i].qidpath);
 				fid->qid = *qid;
-				return nil;
+				return NULL;
 			}
 		if(strcmp(name, "..") == 0){
 			*qid = mkqid(QTDIR, Qroot);
 			fid->qid = *qid;
-			return nil;
+			return NULL;
 		}
 		return "not found";
 	}
@@ -357,18 +357,18 @@ fsstat(Req *r)
 	path = r->fid->qid.path;
 	if(path == Qroot){
 		fillstat(&r->d, "/", QTDIR, Qroot, 0555|DMDIR);
-		respond(r, nil);
+		respond(r, NULL);
 		return;
 	}
 	if(path == Qfactotum){
 		fillstat(&r->d, "factotum", QTDIR, Qfactotum, 0555|DMDIR);
-		respond(r, nil);
+		respond(r, NULL);
 		return;
 	}
 	for(i=0; i<nelem(dirtab); i++)
 		if(dirtab[i].qidpath == path){
 			fillstat(&r->d, dirtab[i].name, 0, dirtab[i].qidpath, dirtab[i].perm);
-			respond(r, nil);
+			respond(r, NULL);
 			return;
 		}
 	respond(r, "file not found");	
@@ -382,7 +382,7 @@ fsopen(Req *r)
 	int n;
 	Fsstate *fss;
 
-	p = nil;
+	p = NULL;
 	for(i=0; i<nelem(dirtab); i++)
 		if(dirtab[i].qidpath == r->fid->qid.path)
 			break;
@@ -412,9 +412,9 @@ fsopen(Req *r)
 	r->fid->aux = fss = emalloc(sizeof(Fsstate));
 	fss->phase = Notstarted;
 	fss->sysuser = r->fid->uid;
-	fss->attr = nil;
+	fss->attr = NULL;
 	strcpy(fss->err, "factotum/fs.c no error");
-	respond(r, nil);
+	respond(r, NULL);
 }
 
 static void
@@ -431,7 +431,7 @@ fsdestroyfid(Fid *fid)
 	}
 
 	fss = fid->aux;
-	if(fss == nil)
+	if(fss == NULL)
 		return;
 	if(fss->ps)
 		(*fss->proto->close)(fss);
@@ -469,9 +469,9 @@ keylist(int i, char *a, uint n, Fsstate *fss)
 	Keyinfo ki;
 	Key *k;
 
-	k = nil;
-	mkkeyinfo(&ki, fss, nil);
-	ki.attr = nil;
+	k = NULL;
+	mkkeyinfo(&ki, fss, NULL);
+	ki.attr = NULL;
 	ki.skip = i;
 	ki.usedisabled = 1;
 	if(findkey(&k, &ki, "") != RpcOk)
@@ -514,12 +514,12 @@ fsread(Req *r)
 		respond(r, "bug in fsread");
 		break;
 	case Qroot:
-		dirread9p(r, rootdirgen, nil);
-		respond(r, nil);
+		dirread9p(r, rootdirgen, NULL);
+		respond(r, NULL);
 		break;
 	case Qfactotum:
-		dirread9p(r, fsdirgen, nil);
-		respond(r, nil);
+		dirread9p(r, fsdirgen, NULL);
+		respond(r, NULL);
 		break;
 	case Qrpc:
 		rpcread(r);
@@ -535,11 +535,11 @@ fsread(Req *r)
 		break;
 	case Qctl:
 		s->listoff = readlist(s->listoff, keylist, r, s);
-		respond(r, nil);
+		respond(r, NULL);
 		break;
 	case Qprotolist:
 		s->listoff = readlist(s->listoff, protolist, r, s);
-		respond(r, nil);
+		respond(r, NULL);
 		break;
 	}
 }
@@ -582,7 +582,7 @@ fswrite(Req *r)
 			respond(r, err);
 		}else{
 			r->ofcall.count = r->ifcall.count;
-			respond(r, nil);
+			respond(r, NULL);
 		}
 		break;
 	}
@@ -594,7 +594,7 @@ fsflush(Req *r)
 	confirmflush(r->oldreq);
 	needkeyflush(r->oldreq);
 	logflush(r->oldreq);
-	respond(r, nil);
+	respond(r, NULL);
 }
 
 Srv fs = {

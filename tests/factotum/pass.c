@@ -35,7 +35,7 @@ passinit(Proto *p, Fsstate *fss)
 	Keyinfo ki;
 	State *s;
 
-	ret = findkey(&k, mkkeyinfo(&ki, fss, nil), "%s", p->keyprompt);
+	ret = findkey(&k, mkkeyinfo(&ki, fss, NULL), "%s", p->keyprompt);
 	if(ret != RpcOk)
 		return ret;
 	setattrs(fss->attr, k->attr);
@@ -73,7 +73,7 @@ passread(Fsstate *fss, void *va, uint *n)
 	case HavePass:
 		user = _strfindattr(s->key->attr, "user");
 		pass = _strfindattr(s->key->privattr, "!password");
-		if(user==nil || pass==nil)
+		if(user==NULL || pass==NULL)
 			return failure(fss, "passread cannot happen");
 		snprint(buf, sizeof buf, "%q %q", user, pass);
 		m = strlen(buf);

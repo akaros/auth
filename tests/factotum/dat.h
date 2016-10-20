@@ -7,17 +7,17 @@
  * in the LICENSE file.
  */
 
-#include <u.h>
-#include <libc.h>
-#include <auth.h>
-#include <authsrv.h>
-#include <mp.h>
-#include <libsec.h>
-#include <String.h>
-#include <thread.h>	/* only for 9p.h */
-#include <fcall.h>
-#include <9p.h>
-
+#include <stdio.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <parlib/spinlock.h>
+#include "9.h"
+#include "auth.h"
+#include "authsrv.h"
+#include "fcall.h"
+#include "9p.h"
 
 enum
 {
@@ -195,7 +195,7 @@ int secstorefetch(char*);
 
 int		_authdial(char*, char*);
 void		askuser(char*);
-int		attrnamefmt(Fmt *fmt);
+//int		attrnamefmt(Fmt *fmt);
 int		canusekey(Fsstate*, Key*);
 void		closekey(Key*);
 unsigned char	*convAI2M(AuthInfo*, unsigned char*, int);

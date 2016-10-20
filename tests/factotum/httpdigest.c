@@ -44,7 +44,7 @@ hdinit(Proto *p, Fsstate *fss)
 	State *s;
 
 	if((iscli = isclient(_strfindattr(fss->attr, "role"))) < 0)
-		return failure(fss, nil);
+		return failure(fss, NULL);
 	if(!iscli)
 		return failure(fss, "%s server not supported", p->name);
 
@@ -78,10 +78,10 @@ digest(char *user, char *realm, char *passwd,
 	/*
 	 *  H(A1) = MD5(uid + ":" + realm ":" + passwd)
 	 */
-	s = md5((uint8_t*)user, strlen(user), nil, nil);
-	md5((uint8_t*)":", 1, nil, s);
-	md5((uint8_t*)realm, strlen(realm), nil, s);
-	md5((uint8_t*)":", 1, nil, s);
+	s = md5((uint8_t*)user, strlen(user), NULL, NULL);
+	md5((uint8_t*)":", 1, NULL, s);
+	md5((uint8_t*)realm, strlen(realm), NULL, s);
+	md5((uint8_t*)":", 1, NULL, s);
 	md5((uint8_t*)passwd, strlen(passwd), b, s);
 	enc16(ha1, sizeof(ha1), b, MD5dlen);
 	strtolower(ha1);
@@ -89,8 +89,8 @@ digest(char *user, char *realm, char *passwd,
 	/*
 	 *  H(A2) = MD5(method + ":" + uri)
 	 */
-	s = md5((uint8_t*)method, strlen(method), nil, nil);
-	md5((uint8_t*)":", 1, nil, s);
+	s = md5((uint8_t*)method, strlen(method), NULL, NULL);
+	md5((uint8_t*)":", 1, NULL, s);
 	md5((uint8_t*)uri, strlen(uri), b, s);
 	enc16(ha2, sizeof(ha2), b, MD5dlen);
 	strtolower(ha2);
@@ -98,10 +98,10 @@ digest(char *user, char *realm, char *passwd,
 	/*
 	 *  digest = MD5(H(A1) + ":" + nonce + ":" + H(A2))
 	 */
-	s = md5((uint8_t*)ha1, MD5dlen*2, nil, nil);
-	md5((uint8_t*)":", 1, nil, s);
-	md5((uint8_t*)nonce, strlen(nonce), nil, s);
-	md5((uint8_t*)":", 1, nil, s);
+	s = md5((uint8_t*)ha1, MD5dlen*2, NULL, NULL);
+	md5((uint8_t*)":", 1, NULL, s);
+	md5((uint8_t*)nonce, strlen(nonce), NULL, s);
+	md5((uint8_t*)":", 1, NULL, s);
 	md5((uint8_t*)ha2, MD5dlen*2, b, s);
 	enc16(dig, MD5dlen*2+1, b, MD5dlen);
 	strtolower(dig);
@@ -131,13 +131,13 @@ hdwrite(Fsstate *fss, void *va, uint n)
 	if(ret != RpcOk)
 		return ret;
 	p = _strfindattr(k->privattr, "!password");
-	if(p == nil)
+	if(p == NULL)
 		return failure(fss, "key has no password");
 	r = _strfindattr(k->attr, "realm");
-	if(r == nil)
+	if(r == NULL)
 		return failure(fss, "key has no realm");
 	u = _strfindattr(k->attr, "user");
-	if(u == nil)
+	if(u == NULL)
 		return failure(fss, "key has no user");
 	setattrs(fss->attr, k->attr);
 

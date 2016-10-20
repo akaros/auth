@@ -19,15 +19,15 @@ logbufproc(Logbuf *lb)
 	while(lb->wait && lb->rp != lb->wp){
 		r = lb->wait;
 		lb->wait = r->aux;
-		if(lb->wait == nil)
+		if(lb->wait == NULL)
 			lb->waitlast = &lb->wait;
-		r->aux = nil;
+		r->aux = NULL;
 		if(r->ifcall.count < 5){
 			respond(r, "factotum: read request count too short");
 			continue;
 		}
 		s = lb->msg[lb->rp];
-		lb->msg[lb->rp] = nil;
+		lb->msg[lb->rp] = NULL;
 		if(++lb->rp == nelem(lb->msg))
 			lb->rp = 0;
 		n = r->ifcall.count;
@@ -45,18 +45,18 @@ logbufproc(Logbuf *lb)
 		}
 		r->ofcall.count = strlen(r->ofcall.data);
 		free(s);
-		respond(r, nil);
+		respond(r, NULL);
 	}
 }
 
 void
 logbufread(Logbuf *lb, Req *r)
 {
-	if(lb->waitlast == nil)
+	if(lb->waitlast == NULL)
 		lb->waitlast = &lb->wait;
 	*(lb->waitlast) = r;
 	lb->waitlast = (Req **)r->aux;
-	r->aux = nil;
+	r->aux = NULL;
 	logbufproc(lb);
 }
 
@@ -68,8 +68,8 @@ logbufflush(Logbuf *lb, Req *r)
 	for(l=(Req **)lb->wait; *l; l=(Req **)(*l)->aux){
 		if(*l == r){
 			*l = r->aux;
-			r->aux = nil;
-			if(*l == nil)
+			r->aux = NULL;
+			if(*l == NULL)
 				lb->waitlast = l;
 			respond(r, "interrupted");
 			break;

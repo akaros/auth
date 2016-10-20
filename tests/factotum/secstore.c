@@ -105,14 +105,14 @@ SC_secret(SConn *conn, uint8_t *sigma, int direction)
 
 	if(direction != 0){
 		hmac_sha1(sigma, nsigma, (uint8_t*)"one", 3, ss->out.secret,
-			  nil);
+			  NULL);
 		hmac_sha1(sigma, nsigma, (uint8_t*)"two", 3, ss->in.secret,
-			  nil);
+			  NULL);
 	}else{
 		hmac_sha1(sigma, nsigma, (uint8_t*)"two", 3, ss->out.secret,
-			  nil);
+			  NULL);
 		hmac_sha1(sigma, nsigma, (uint8_t*)"one", 3, ss->in.secret,
-			  nil);
+			  NULL);
 	}
 	setupRC4state(&ss->in.rc4, ss->in.secret, 16); // restrict to 128 bits
 	setupRC4state(&ss->out.rc4, ss->out.secret, 16);
@@ -132,8 +132,8 @@ hash(uint8_t secret[SHA1dlen], uint8_t *data, int len, int seqno,
 	seq[2] = seqno>>8;
 	seq[3] = seqno;
 	memset(&sha, 0, sizeof sha);
-	sha1(secret, SHA1dlen, nil, &sha);
-	sha1(data, len, nil, &sha);
+	sha1(secret, SHA1dlen, NULL, &sha);
+	sha1(data, len, NULL, &sha);
 	sha1(seq, 4, d, &sha);
 }
 
@@ -150,8 +150,8 @@ verify(uint8_t secret[SHA1dlen], uint8_t *data, int len, int seqno,
 	seq[2] = seqno>>8;
 	seq[3] = seqno;
 	memset(&sha, 0, sizeof sha);
-	sha1(secret, SHA1dlen, nil, &sha);
-	sha1(data, len, nil, &sha);
+	sha1(secret, SHA1dlen, NULL, &sha);
+	sha1(data, len, NULL, &sha);
 	sha1(seq, 4, digest, &sha);
 	return memcmp(d, digest, SHA1dlen);
 }
@@ -255,7 +255,7 @@ newSConn(int fd)
 	SConn *conn;
 
 	if(fd < 0)
-		return nil;
+		return NULL;
 	ss = (SS*)emalloc(sizeof(*ss));
 	conn = (SConn*)emalloc(sizeof(*conn));
 	ss->fd  = fd;
@@ -327,7 +327,7 @@ getfile(SConn *conn, uint8_t *key, int nkey)
 	}
 
 	ibr = ibw = ib;
-	buf = nil;
+	buf = NULL;
 	nbuf = 0;
 	for(nr=0; nr < len;){
 		if((n = conn->read(conn, ibw, Maxmsg)) <= 0){
@@ -341,7 +341,7 @@ getfile(SConn *conn, uint8_t *key, int nkey)
 				werrstr("secstore: no IV in file");
 				return -1;
 			}
-			sha = sha1((uint8_t*)"aescbc file", 11, nil, nil);
+			sha = sha1((uint8_t*)"aescbc file", 11, NULL, NULL);
 			sha1(key, nkey, skey, sha);
 			setupAESstate(&aes, skey, AESbsize, ibr);
 			memset(skey, 0, sizeof skey);
@@ -400,19 +400,19 @@ initPAKparams(void)
 	if(pak)
 		return;
 	pak = (PAKparams*)emalloc(sizeof(*pak));
-	pak->q = strtomp("E0F0EF284E10796C5A2A511E94748BA03C795C13", nil, 16, nil);
+	pak->q = strtomp("E0F0EF284E10796C5A2A511E94748BA03C795C13", NULL, 16, NULL);
 	pak->p = strtomp("C41CFBE4D4846F67A3DF7DE9921A49D3B42DC33728427AB159CEC8CBBD"
 		"B12B5F0C244F1A734AEB9840804EA3C25036AD1B61AFF3ABBC247CD4B384224567A86"
 		"3A6F020E7EE9795554BCD08ABAD7321AF27E1E92E3DB1C6E7E94FAAE590AE9C48F96D9"
-		"3D178E809401ABE8A534A1EC44359733475A36A70C7B425125062B1142D", nil, 16, nil);
+		"3D178E809401ABE8A534A1EC44359733475A36A70C7B425125062B1142D", NULL, 16, NULL);
 	pak->r = strtomp("DF310F4E54A5FEC5D86D3E14863921E834113E060F90052AD332B3241CEF"
 		"2497EFA0303D6344F7C819691A0F9C4A773815AF8EAECFB7EC1D98F039F17A32A7E887"
 		"D97251A927D093F44A55577F4D70444AEBD06B9B45695EC23962B175F266895C67D21"
-		"C4656848614D888A4", nil, 16, nil);
+		"C4656848614D888A4", NULL, 16, NULL);
 	pak->g = strtomp("2F1C308DC46B9A44B52DF7DACCE1208CCEF72F69C743ADD4D2327173444"
 		"ED6E65E074694246E07F9FD4AE26E0FDDD9F54F813C40CB9BCD4338EA6F242AB94CD41"
 		"0E676C290368A16B1A3594877437E516C53A6EEE5493A038A017E955E218E7819734E3E"
-		"2A6E0BAE08B14258F8C03CC1B30E0DDADFCF7CEDF0727684D3D255F1", nil, 16, nil);
+		"2A6E0BAE08B14258F8C03CC1B30E0DDADFCF7CEDF0727684D3D255F1", NULL, 16, NULL);
 }
 
 // H = (sha(ver,C,sha(passphrase)))^r mod p,
@@ -433,7 +433,7 @@ longhash(char *ver, char *C, uint8_t *passwd, mpint *H)
 	memmove(Cp+nver+nC, passwd, SHA1dlen);
 	for(i = 0; i < 7; i++){
 		key[0] = 'A'+i;
-		hmac_sha1(Cp, n, key, sizeof key, buf+i*SHA1dlen, nil);
+		hmac_sha1(Cp, n, key, sizeof key, buf+i*SHA1dlen, NULL);
 	}
 	memset(Cp, 0, n);
 	free(Cp);
@@ -448,11 +448,11 @@ PAK_Hi(char *C, char *passphrase, mpint *H, mpint *Hi)
 {
 	uint8_t passhash[SHA1dlen];
 
-	sha1((uint8_t *)passphrase, strlen(passphrase), passhash, nil);
+	sha1((uint8_t *)passphrase, strlen(passphrase), passhash, NULL);
 	initPAKparams();
 	longhash(VERSION, C, passhash, H);
 	mpinvert(H, pak->p, Hi);
-	return mptoa(Hi, 64, nil, 0);
+	return mptoa(Hi, 64, NULL, 0);
 }
 
 // another, faster, hash function for each party to
@@ -485,11 +485,11 @@ shorthash(char *mess, char *C, char *S, char *m, char *mu,
 //	pass is the user's passphrase
 // On output, session secret has been set in conn
 //	(unless return code is negative, which means failure).
-//    If pS is not nil, it is set to the (alloc'd) name the server calls itself.
+//    If pS is not NULL, it is set to the (alloc'd) name the server calls itself.
 static int
 PAKclient(SConn *conn, char *C, char *pass, char **pS)
 {
-	char *mess, *mess2, *eol, *S, *hexmu, *ks, *hexm, *hexsigma = nil, *hexHi;
+	char *mess, *mess2, *eol, *S, *hexmu, *ks, *hexm, *hexsigma = NULL, *hexHi;
 	char kc[2*SHA1dlen+1];
 	uint8_t digest[SHA1dlen];
 	int rc = -1, n;
@@ -499,14 +499,14 @@ PAKclient(SConn *conn, char *C, char *pass, char **pS)
 	hexHi = PAK_Hi(C, pass, H, Hi);
 
 	// random 1<=x<=q-1; send C, m=g**x H
-	x = mprand(164, genrandom, nil);
+	x = mprand(164, genrandom, NULL);
 	mpmod(x, pak->q, x);
 	if(mpcmp(x, mpzero) == 0)
 		mpassign(mpone, x);
 	mpexp(pak->g, x, pak->p, m);
 	mpmul(m, H, m);
 	mpmod(m, pak->p, m);
-	hexm = mptoa(m, 64, nil, 0);
+	hexm = mptoa(m, 64, NULL, 0);
 	mess = (char*)emalloc(2*Maxmsg+2);
 	mess2 = mess+Maxmsg+1;
 	snprint(mess, Maxmsg, "%s\tPAK\nC=%s\nm=%s\n", VERSION, C, hexm);
@@ -541,9 +541,9 @@ PAKclient(SConn *conn, char *C, char *pass, char **pS)
 	*eol = 0;
 	if(pS)
 		*pS = estrdup(S);
-	strtomp(hexmu, nil, 64, mu);
+	strtomp(hexmu, NULL, 64, mu);
 	mpexp(mu, x, pak->p, sigma);
-	hexsigma = mptoa(sigma, 64, nil, 0);
+	hexsigma = mptoa(sigma, 64, NULL, 0);
 	shorthash("server", C, S, hexm, hexmu, hexsigma, hexHi, digest);
 	enc64(kc, sizeof kc, digest, SHA1dlen);
 	if(strcmp(ks, kc) != 0){
@@ -590,29 +590,29 @@ secstorefetch(char *password)
 	SConn *conn;
 	char *pass, *sta;
 
-	sta = nil;
-	conn = nil;
-	if(password != nil && *password)
+	sta = NULL;
+	conn = NULL;
+	if(password != NULL && *password)
 		pass = estrdup(password);
 	else
-		pass = readcons("secstore password", nil, 1);
-	if(pass==nil || strlen(pass)==0){
+		pass = readcons("secstore password", NULL, 1);
+	if(pass==NULL || strlen(pass)==0){
 		werrstr("cancel");
 		goto Out;
 	}
 	if((fd = secdial()) < 0)
 		goto Out;
-	if((conn = newSConn(fd)) == nil)
+	if((conn = newSConn(fd)) == NULL)
 		goto Out;
-	if(PAKclient(conn, owner, pass, nil) < 0){
+	if(PAKclient(conn, owner, pass, NULL) < 0){
 		werrstr("password mistyped?");
 		goto Out;
 	}
 	if(readstr(conn, s) < 0)
 		goto Out;
 	if(strcmp(s, "STA") == 0){
-		sta = readcons("STA PIN+SecureID", nil, 1);
-		if(sta==nil || strlen(sta)==0){
+		sta = readcons("STA PIN+SecureID", NULL, 1);
+		if(sta==NULL || strlen(sta)==0){
 			werrstr("cancel");
 			goto Out;
 		}

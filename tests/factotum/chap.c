@@ -91,7 +91,7 @@ chapinit(Proto *p, Fsstate *fss)
 	State *s;
 
 	if((iscli = isclient(_strfindattr(fss->attr, "role"))) < 0)
-		return failure(fss, nil);
+		return failure(fss, NULL);
 
 	s = emalloc(sizeof *s);
 	fss->phasename = phasenames;
@@ -114,7 +114,7 @@ chapinit(Proto *p, Fsstate *fss)
 		}
 		if(dochal(s) < 0){
 			free(s);
-			return failure(fss, nil);
+			return failure(fss, NULL);
 		}
 		fss->phase = SHaveChal;
 	}
@@ -158,11 +158,11 @@ chapwrite(Fsstate *fss, void *va, uint n)
 		return phaseerror(fss, "write");
 
 	case CNeedChal:
-		ret = findkey(&k, mkkeyinfo(&ki, fss, nil), "%s", fss->proto->keyprompt);
+		ret = findkey(&k, mkkeyinfo(&ki, fss, NULL), "%s", fss->proto->keyprompt);
 		if(ret != RpcOk)
 			return ret;
 		v = _strfindattr(k->privattr, "!password");
-		if(v == nil)
+		if(v == NULL)
 			return failure(fss, "key has no password");
 		setattrs(fss->attr, k->attr);
 		switch(s->astype){
@@ -216,7 +216,7 @@ chapwrite(Fsstate *fss, void *va, uint n)
 			break;
 		}
 		if(doreply(s, reply, nreply) < 0)
-			return failure(fss, nil);
+			return failure(fss, NULL);
 		fss->phase = Established;
 		fss->ai.cuid = s->t.cuid;
 		fss->ai.suid = s->t.suid;
@@ -275,12 +275,12 @@ dochal(State *s)
 	s->asfd = -1;
 
 	/* send request to authentication server and get challenge */
-	if((dom = _strfindattr(s->key->attr, "dom")) == nil
-	|| (user = _strfindattr(s->key->attr, "user")) == nil){
+	if((dom = _strfindattr(s->key->attr, "dom")) == NULL
+	|| (user = _strfindattr(s->key->attr, "user")) == NULL){
 		werrstr("chap/dochal cannot happen");
 		goto err;
 	}
-	s->asfd = _authdial(nil, dom);
+	s->asfd = _authdial(NULL, dom);
 	if(s->asfd < 0)
 		goto err;
 	
@@ -409,7 +409,7 @@ doNTchap(char *pass, uint8_t chal[ChapChallen],
 	}
 
 	memset(digest, 0, sizeof digest);
-	md4(unipass, w-unipass, digest, nil);
+	md4(unipass, w-unipass, digest, NULL);
 	memset(unipass, 0, sizeof unipass);
 	hash(digest, chal, reply);
 }
@@ -462,6 +462,6 @@ dochap(char *pass, int id, char chal[ChapChallen],
 	memset(buf, 0, sizeof buf);
 	strncpy(buf+1, pass, n);
 	memmove(buf+1+n, chal, ChapChallen);
-	md5((uint8_t*)buf, 1+n+ChapChallen, resp, nil);
+	md5((uint8_t*)buf, 1+n+ChapChallen, resp, NULL);
 }
 

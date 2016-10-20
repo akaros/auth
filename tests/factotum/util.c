@@ -34,11 +34,11 @@ bindnetcs(void)
 int
 _authdial(char *net, char *authdom)
 {
-	int fd, vanilla;
+	int fd, vaNULLla;
 
-	vanilla = net==nil || strcmp(net, "/net")==0;
+	vaNULLla = net==NULL || strcmp(net, "/net")==0;
 
-	if(!vanilla || bindnetcs()>=0)
+	if(!vaNULLla || bindnetcs()>=0)
 		return authdial(net, authdom);
 
 	/*
@@ -54,7 +54,7 @@ _authdial(char *net, char *authdom)
 	 */
 
 	/* use the auth server passed to us as an arg */
-	if(authaddr == nil)
+	if(authaddr == NULL)
 		return -1;
 	fd = dial(netmkaddr(authaddr, "tcp", "567"), 0, 0, 0);
 	if(fd >= 0)
@@ -81,7 +81,7 @@ secdial(void)
 	 * like il!host or tcp!host or host.
 	 */
 	if(strcmp(p, "$auth")==0){
-		if(authaddr == nil)
+		if(authaddr == NULL)
 			return -1;
 		safecpy(buf, authaddr, sizeof buf);
 		nf = getfields(buf, f, nelem(f), 0, "!");
@@ -128,11 +128,11 @@ promptforkey(char *params)
 		v = a->name;
 		if(a->type != AttrQuery || v[0]=='!')
 			continue;
-		def = nil;
+		def = NULL;
 		if(strcmp(v, "user") == 0)
 			def = getuser();
 		a->val = readcons(v, def, 0);
-		if(a->val == nil)
+		if(a->val == NULL)
 			sysfatal("user terminated key input");
 		a->type = AttrNameval;
 	}
@@ -140,11 +140,11 @@ promptforkey(char *params)
 		v = a->name;
 		if(a->type != AttrQuery || v[0]!='!')
 			continue;
-		def = nil;
+		def = NULL;
 		if(strcmp(v+1, "user") == 0)
 			def = getuser();
 		a->val = readcons(v+1, def, 1);
-		if(a->val == nil)
+		if(a->val == NULL)
 			sysfatal("user terminated key input");
 		a->type = AttrNameval;
 	}
@@ -178,7 +178,7 @@ askuser(char *params)
 	Attr *attr;
 
 	attr = promptforkey(params);
-	if(attr == nil)
+	if(attr == NULL)
 		sysfatal("no key supplied");
 	if(sendkey(attr) < 0)
 		sysfatal("sending key to factotum: %r");
@@ -210,7 +210,7 @@ canusekey(Fsstate *fss, Key *k)
 void
 closekey(Key *k)
 {
-	if(k == nil)
+	if(k == NULL)
 		return;
 	if(--k->ref != 0)
 		return;
@@ -220,7 +220,7 @@ closekey(Key *k)
 	_freeattr(k->privattr);
 	k->attr = (void*)~1;
 	k->privattr = (void*)~1;
-	k->proto = nil;
+	k->proto = NULL;
 	free(k);
 }
 
@@ -229,13 +229,13 @@ pstring(uint8_t *p, uint8_t *e, char *s)
 {
 	uint n;
 
-	if(p == nil)
-		return nil;
-	if(s == nil)
+	if(p == NULL)
+		return NULL;
+	if(s == NULL)
 		s = "";
 	n = strlen(s);
 	if(p+n+BIT16SZ >= e)
-		return nil;
+		return NULL;
 	PBIT16(p, n);
 	p += BIT16SZ;
 	memmove(p, s, n);
@@ -246,15 +246,15 @@ pstring(uint8_t *p, uint8_t *e, char *s)
 static uint8_t*
 pcarray(uint8_t *p, uint8_t *e, uint8_t *s, uint n)
 {
-	if(p == nil)
-		return nil;
-	if(s == nil){
+	if(p == NULL)
+		return NULL;
+	if(s == NULL){
 		if(n > 0)
 			sysfatal("pcarray");
 		s = (uint8_t*)"";
 	}
 	if(p+n+BIT16SZ >= e)
-		return nil;
+		return NULL;
 	PBIT16(p, n);
 	p += BIT16SZ;
 	memmove(p, s, n);
@@ -280,7 +280,7 @@ failure(Fsstate *s, char *fmt, ...)
 	char e[ERRMAX];
 	va_list arg;
 
-	if(fmt == nil)
+	if(fmt == NULL)
 		rerrstr(s->err, sizeof(s->err));
 	else {
 		va_start(arg, fmt);
@@ -340,7 +340,7 @@ findkey(Key **ret, Keyinfo *ki, char *fmt, ...)
 	Attr *a, *attr0, *attr1, *attr2, *attr3, **l;
 	Key *k;
 
-	*ret = nil;
+	*ret = NULL;
 
 	who = ki->user;
 	attr0 = ki->attr;
@@ -350,27 +350,27 @@ findkey(Key **ret, Keyinfo *ki, char *fmt, ...)
 		va_end(arg);
 		attr1 = _parseattr(buf);
 	}else
-		attr1 = nil;
+		attr1 = NULL;
 
 	if(who && strcmp(who, owner) == 0)
-		who = nil;
+		who = NULL;
 
 	if(who){
 		snprint(buf, sizeof buf, "owner=%q", who);
 		attr2 = _parseattr(buf);
 		attr3 = _parseattr("owner=*");
 	}else
-		attr2 = attr3 = nil;
+		attr2 = attr3 = NULL;
 
 	p = _strfindattr(attr0, "proto");
-	if(p == nil)
+	if(p == NULL)
 		p = _strfindattr(attr1, "proto");
-	if(p && findproto(p) == nil){
+	if(p && findproto(p) == NULL){
 		werrstr("unknown protocol %s", p);
 		_freeattr(attr1);
 		_freeattr(attr2);
 		_freeattr(attr3);
-		return failure(ki->fss, nil);
+		return failure(ki->fss, NULL);
 	}
 
 	nmatch = 0; 
@@ -380,7 +380,7 @@ findkey(Key **ret, Keyinfo *ki, char *fmt, ...)
 			continue;
 		if(matchattr(attr0, k->attr, k->privattr) && matchattr(attr1, k->attr, k->privattr)){
 			/* check ownership */
-			if(!matchattr(attr2, k->attr, nil) && !matchattr(attr3, k->attr, nil))
+			if(!matchattr(attr2, k->attr, NULL) && !matchattr(attr3, k->attr, NULL))
 				continue;
 			if(nmatch++ < ki->skip)
 				continue;
@@ -408,7 +408,7 @@ findkey(Key **ret, Keyinfo *ki, char *fmt, ...)
 	_freeattr(attr2);
 	_freeattr(attr3);
 	s = RpcFailure;
-	if(askforkeys && who==nil && (hasqueries(attr0) || hasqueries(attr1))){
+	if(askforkeys && who==NULL && (hasqueries(attr0) || hasqueries(attr1))){
 		if(nmatch == 0){
 			attr0 = _copyattr(attr0);
 			for(l=&attr0; *l; l=&(*l)->next)
@@ -418,7 +418,7 @@ findkey(Key **ret, Keyinfo *ki, char *fmt, ...)
 				if(ignoreattr((*l)->name)){
 					a = *l;
 					*l = (*l)->next;
-					a->next = nil;
+					a->next = NULL;
 					_freeattr(a);
 				}else
 					l = &(*l)->next;
@@ -426,14 +426,14 @@ findkey(Key **ret, Keyinfo *ki, char *fmt, ...)
 			attr0 = sortattr(attr0);
 			snprint(ki->fss->keyinfo, sizeof ki->fss->keyinfo, "%A", attr0);
 			_freeattr(attr0);
-			attr1 = nil;	/* attr1 was linked to attr0 */
+			attr1 = NULL;	/* attr1 was linked to attr0 */
 		}else
 			ki->fss->keyinfo[0] = '\0';
 		s = RpcNeedkey;
 	}
 	_freeattr(attr1);
 	if(s == RpcFailure)
-		return failure(ki->fss, nil);	/* loads error string */
+		return failure(ki->fss, NULL);	/* loads error string */
 	return s;
 }
 
@@ -447,9 +447,9 @@ findp9authkey(Key **k, Fsstate *fss)
 	 * We don't use fss->attr here because we don't
 	 * care about what the user name is set to, for instance.
 	 */
-	mkkeyinfo(&ki, fss, nil);
-	ki.attr = nil;
-	ki.user = nil;
+	mkkeyinfo(&ki, fss, NULL);
+	ki.attr = NULL;
+	ki.user = NULL;
 	if(dom = _strfindattr(fss->attr, "dom"))
 		return findkey(k, &ki, "proto=p9sk1 dom=%q role=server user?", dom);
 	else
@@ -464,7 +464,7 @@ findproto(char *name)
 	for(i=0; prototab[i]; i++)
 		if(strcmp(name, prototab[i]->name) == 0)
 			return prototab[i];
-	return nil;
+	return NULL;
 }
 
 char*
@@ -481,7 +481,7 @@ getnvramkey(int flag, char **secstorepw)
 	 * but safe still holds good data.
 	 */
 	if(readnvram(&safe, flag)<0 && safe.authid[0]==0) 
-		return nil;
+		return NULL;
 
 	/*
 	 *  we're using the config area to hold the secstore
@@ -499,7 +499,7 @@ getnvramkey(int flag, char **secstorepw)
 		if(safe.machkey[i] != 0)
 			break;
 	if(i == DESKEYLEN)
-		return nil;
+		return NULL;
 
 	s = emalloc(512);
 	fmtinstall('H', encodefmt);
@@ -513,7 +513,7 @@ getnvramkey(int flag, char **secstorepw)
 int
 isclient(char *role)
 {
-	if(role == nil){
+	if(role == NULL){
 		werrstr("role not specified");
 		return -1;
 	}
@@ -607,7 +607,7 @@ mkcap(char *from, char *to)
 	uint8_t hash[SHA1dlen];
 
 	if(caphashfd < 0)
-		return nil;
+		return NULL;
 
 	/* create the capability */
 	nto = strlen(to);
@@ -621,13 +621,13 @@ mkcap(char *from, char *to)
 
 	/* hash the capability */
 	hmac_sha1((uint8_t*)cap, strlen(cap), (uint8_t*)key, strlen(key),
-		  hash, nil);
+		  hash, NULL);
 
 	/* give the kernel the hash */
 	key[-1] = '@';
 	if(write(caphashfd, hash, SHA1dlen) < 0){
 		free(cap);
-		return nil;
+		return NULL;
 	}
 
 	return cap;
@@ -654,7 +654,7 @@ phasename(Fsstate *fss, int phase, char *tmp)
 	else if(phase == Notstarted)
 		name = "Notstarted";
 	else if(phase < 0 || phase >= fss->maxphase
-	|| (name = fss->phasename[phase]) == nil){
+	|| (name = fss->phasename[phase]) == NULL){
 		sprint(tmp, "%d", phase);
 		name = tmp;
 	}
@@ -667,10 +667,10 @@ outin(char *prompt, char *def, int len)
 	char *s;
 
 	s = readcons(prompt, def, 0);
-	if(s == nil)
+	if(s == NULL)
 		return -1;
-	if(s == nil)
-		sysfatal("s==nil???");
+	if(s == NULL)
+		sysfatal("s==NULL???");
 	strncpy(def, s, len);
 	def[len-1] = 0;
 	free(s);
@@ -708,7 +708,7 @@ estrappend(char *s, char *fmt, ...)
 
 	va_start(arg, fmt);
 	t = vsmprint(fmt, arg);
-	if(t == nil)
+	if(t == NULL)
 		sysfatal("out of memory");
 	va_end(arg);
 	s = erealloc(s, strlen(s)+strlen(t)+1);
@@ -734,7 +734,7 @@ readcons(char *prompt, char *def, int raw)
 	fdout = open("/dev/cons", OWRITE);
 	if(fdout < 0)
 		fdout = 1;
-	if(def != nil)
+	if(def != NULL)
 		fprint(fdout, "%s[%s]: ", prompt, def);
 	else
 		fprint(fdout, "%s: ", prompt);
@@ -754,7 +754,7 @@ readcons(char *prompt, char *def, int raw)
 			if(ctl >= 0)
 				close(ctl);
 			free(s);
-			return nil;
+			return NULL;
 		}
 		if(n < 0)
 			goto Error;
@@ -768,7 +768,7 @@ readcons(char *prompt, char *def, int raw)
 			close(ctl);
 			close(fdin);
 			close(fdout);
-			if(*s == 0 && def != nil)
+			if(*s == 0 && def != NULL)
 				s = estrappend(s, "%s", def);
 			return s;
 		}
@@ -776,7 +776,7 @@ readcons(char *prompt, char *def, int raw)
 			if(strlen(s) > 0)
 				s[strlen(s)-1] = 0;
 		} else if(line[0] == 0x15) {	/* ^U: line kill */
-			if(def != nil)
+			if(def != NULL)
 				fprint(fdout, "\n%s[%s]: ", prompt, def);
 			else
 				fprint(fdout, "\n%s: ", prompt);
@@ -800,7 +800,7 @@ replacekey(Key *kn, int before)
 
 	for(i=0; i<ring->nkey; i++){
 		k = ring->key[i];
-		if(matchattr(kn->attr, k->attr, nil) && matchattr(k->attr, kn->attr, nil)){
+		if(matchattr(kn->attr, k->attr, NULL) && matchattr(k->attr, kn->attr, NULL)){
 			closekey(k);
 			kn->ref++;
 			ring->key[i] = kn;
@@ -825,8 +825,8 @@ safecpy(char *to, char *from, int n)
 	memset(to, 0, n);
 	if(n == 1)
 		return to;
-	if(from==nil)
-		sysfatal("safecpy called with from==nil, pc=%#p",
+	if(from==NULL)
+		sysfatal("safecpy called with from==NULL, pc=%#p",
 			getcallerpc());
 	strncpy(to, from, n-1);
 	return to;
@@ -874,7 +874,7 @@ setattrs(Attr *a, Attr *b)
 					}else{
 						freea = *l;
 						*l = (*l)->next;
-						freea->next = nil;
+						freea->next = NULL;
 						_freeattr(freea);
 					}
 					break;
@@ -885,7 +885,7 @@ setattrs(Attr *a, Attr *b)
 				l = &(*l)->next;
 		}
 		if(found == 0){
-			*l = _mkattr(b->type, b->name, b->val, nil);
+			*l = _mkattr(b->type, b->name, b->val, NULL);
 			setmalloctag(*l, getcallerpc());
 		}
 continue2:;
@@ -905,12 +905,12 @@ sortattr(Attr *a)
 	int i;
 	Attr *anext, *a0, *a1, **l;
 
-	if(a == nil || a->next == nil)
+	if(a == NULL || a->next == NULL)
 		return a;
 
 	/* cut list in halves */
-	a0 = nil;
-	a1 = nil;
+	a0 = NULL;
+	a1 = NULL;
 	i = 0;
 	for(; a; a=anext){
 		anext = a->next;
@@ -930,10 +930,10 @@ sortattr(Attr *a)
 	/* merge */
 	l = &a;
 	while(a0 || a1){
-		if(a1==nil){
+		if(a1==NULL){
 			anext = a0;
 			a0 = a0->next;
-		}else if(a0==nil){
+		}else if(a0==NULL){
 			anext = a1;
 			a1 = a1->next;
 		}else if(strcmp(a0->name, a1->name) < 0){
@@ -946,7 +946,7 @@ sortattr(Attr *a)
 		*l = anext;
 		l = &(*l)->next;
 	}
-	*l = nil;
+	*l = NULL;
 	return a;
 }
 
@@ -963,7 +963,7 @@ writehostowner(char *owner)
 	int fd;
 	char *s;
 
-	if((s = strchr(owner,'@')) != nil){
+	if((s = strchr(owner,'@')) != NULL){
 		*s++ = 0;
 		strncpy(secstore, s, (sizeof secstore)-1);
 	}
@@ -986,7 +986,7 @@ attrnamefmt(Fmt *fmt)
 	b = buf;
 	strcpy(buf, " ");
 	for(a=va_arg(fmt->args, Attr*); a; a=a->next){
-		if(a->name == nil)
+		if(a->name == NULL)
 			continue;
 		b = seprint(b, ebuf, " %q?", a->name);
 	}
@@ -1003,11 +1003,11 @@ disablekey(Key *k)
 	for(a=k->attr; a; a=a->next){
 		if(a->type==AttrNameval && strcmp(a->name, "disabled") == 0)
 			return;
-		if(a->next == nil)
+		if(a->next == NULL)
 			break;
 	}
 	if(a)
-		a->next = _mkattr(AttrNameval, "disabled", "by.factotum", nil);
+		a->next = _mkattr(AttrNameval, "disabled", "by.factotum", NULL);
 	else
-		k->attr = _mkattr(AttrNameval, "disabled", "by.factotum", nil);	/* not reached: always a proto attribute */
+		k->attr = _mkattr(AttrNameval, "disabled", "by.factotum", NULL);	/* not reached: always a proto attribute */
 }

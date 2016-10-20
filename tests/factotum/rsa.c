@@ -72,29 +72,29 @@ readrsapriv(Key *k)
 
 	priv = rsaprivalloc();
 
-	if((a=_strfindattr(k->attr, "ek"))==nil || (priv->pub.ek=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->attr, "ek"))==NULL || (priv->pub.ek=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if((a=_strfindattr(k->attr, "n"))==nil || (priv->pub.n=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->attr, "n"))==NULL || (priv->pub.n=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if(k->privattr == nil)		/* only public half */
+	if(k->privattr == NULL)		/* only public half */
 		return priv;
-	if((a=_strfindattr(k->privattr, "!p"))==nil || (priv->p=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->privattr, "!p"))==NULL || (priv->p=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if((a=_strfindattr(k->privattr, "!q"))==nil || (priv->q=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->privattr, "!q"))==NULL || (priv->q=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if((a=_strfindattr(k->privattr, "!kp"))==nil || (priv->kp=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->privattr, "!kp"))==NULL || (priv->kp=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if((a=_strfindattr(k->privattr, "!kq"))==nil || (priv->kq=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->privattr, "!kq"))==NULL || (priv->kq=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if((a=_strfindattr(k->privattr, "!c2"))==nil || (priv->c2=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->privattr, "!c2"))==NULL || (priv->c2=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
-	if((a=_strfindattr(k->privattr, "!dk"))==nil || (priv->dk=strtomp(a, nil, 16, nil))==nil)
+	if((a=_strfindattr(k->privattr, "!dk"))==NULL || (priv->dk=strtomp(a, NULL, 16, NULL))==NULL)
 		goto Error;
 	return priv;
 
 Error:
 	rsaprivfree(priv);
-	return nil;
+	return NULL;
 }
 
 static int
@@ -104,7 +104,7 @@ rsainit(Proto* p, Fsstate *fss)
 	State *s;
 	char *role;
 
-	if((role = _strfindattr(fss->attr, "role")) == nil)
+	if((role = _strfindattr(fss->attr, "role")) == NULL)
 		return failure(fss, "rsa role not specified");
 	if(strcmp(role, "client") == 0)
 		fss->phase = CHavePub;
@@ -123,11 +123,11 @@ rsainit(Proto* p, Fsstate *fss)
 	switch(fss->phase){
 	case SNeedHash:
 	case VNeedHash:
-		mkkeyinfo(&ki, fss, nil);
-		if(findkey(&s->key, &ki, nil) != RpcOk)
-			return failure(fss, nil);
+		mkkeyinfo(&ki, fss, NULL);
+		if(findkey(&s->key, &ki, NULL) != RpcOk)
+			return failure(fss, NULL);
 		/* signing needs private key */
-		if(fss->phase == SNeedHash && s->key->privattr == nil)
+		if(fss->phase == SNeedHash && s->key->privattr == NULL)
 			return failure(fss,
 				"missing private half of key -- cannot sign");
 	}
@@ -150,13 +150,13 @@ rsaread(Fsstate *fss, void *va, uint *n)
 	case CHavePub:
 		if(s->key){
 			closekey(s->key);
-			s->key = nil;
+			s->key = NULL;
 		}
-		mkkeyinfo(&ki, fss, nil);
+		mkkeyinfo(&ki, fss, NULL);
 		ki.skip = s->off;
 		ki.noconf = 1;
-		if(findkey(&s->key, &ki, nil) != RpcOk)
-			return failure(fss, nil);
+		if(findkey(&s->key, &ki, NULL) != RpcOk)
+			return failure(fss, NULL);
 		s->off++;
 		priv = s->key->priv;
 		*n = snprint(va, *n, "%B", priv->pub.n);
@@ -169,8 +169,8 @@ rsaread(Fsstate *fss, void *va, uint *n)
 		len = (mpsignif(priv->pub.n)+7)/8;
 		if(len > *n)
 			return failure(fss, "signature buffer too short");
-		m = rsadecrypt(priv, s->digest, nil);
-		r = mptobe(m, (uint8_t*)va, len, nil);
+		m = rsadecrypt(priv, s->digest, NULL);
+		r = mptobe(m, (uint8_t*)va, len, NULL);
 		if(r < len){
 			memmove((uint8_t*)va+len-r, va, r);
 			memset(va, 0, len-r);
@@ -201,7 +201,7 @@ rsawrite(Fsstate *fss, void *va, uint n)
 	default:
 		return phaseerror(fss, "write");
 	case CHavePub:
-		if(s->key == nil)
+		if(s->key == NULL)
 			return failure(fss, "no current key");
 		switch(canusekey(fss, s->key)){
 		case -1:
@@ -211,8 +211,8 @@ rsawrite(Fsstate *fss, void *va, uint n)
 		case 1:
 			break;
 		}
-		m = strtomp(va, nil, 16, nil);
-		if(m == nil)
+		m = strtomp(va, NULL, 16, NULL);
+		if(m == NULL)
 			return failure(fss, "invalid challenge value");
 		m = rsadecrypt(s->key->priv, m, m);
 		s->resp = m;
@@ -222,7 +222,7 @@ rsawrite(Fsstate *fss, void *va, uint n)
 	case VNeedHash:
 		/* get hash type from key */
 		hash = _strfindattr(s->key->attr, "hash");
-		if(hash == nil)
+		if(hash == NULL)
 			hash = "sha1";
 		if(strcmp(hash, "sha1") == 0)
 			dlen = SHA1dlen;
@@ -235,8 +235,8 @@ rsawrite(Fsstate *fss, void *va, uint n)
 				n, dlen);
 		priv = s->key->priv;
 		s->digest = mkdigest(&priv->pub, hash, (uint8_t *)va, n);
-		if(s->digest == nil)
-			return failure(fss, nil);
+		if(s->digest == NULL)
+			return failure(fss, NULL);
 		if(fss->phase == VNeedHash)
 			fss->phase = VNeedSig;
 		else
@@ -244,8 +244,8 @@ rsawrite(Fsstate *fss, void *va, uint n)
 		return RpcOk;
 	case VNeedSig:
 		priv = s->key->priv;
-		m = betomp((uint8_t*)va, n, nil);
-		mm = rsaencrypt(&priv->pub, m, nil);
+		m = betomp((uint8_t*)va, n, NULL);
+		mm = rsaencrypt(&priv->pub, m, NULL);
 		s->sigresp = mpcmp(s->digest, mm);
 		mpfree(m);
 		mpfree(mm);
@@ -274,7 +274,7 @@ rsaaddkey(Key *k, int before)
 {
 	fmtinstall('B', mpfmt);
 
-	if((k->priv = readrsapriv(k)) == nil){
+	if((k->priv = readrsapriv(k)) == NULL){
 		werrstr("malformed key data");
 		return -1;
 	}
@@ -397,7 +397,7 @@ mkdigest(RSApub *key, char *hashalg, uint8_t *hash, uint dlen)
 	len = (mpsignif(key->n)+7)/8 - 1;
 	if(len < n+2){
 		werrstr("rsa key too short");
-		return nil;
+		return NULL;
 	}
 	pad = len - (n+2);
 	buf = emalloc(len);
@@ -405,7 +405,7 @@ mkdigest(RSApub *key, char *hashalg, uint8_t *hash, uint dlen)
 	memset(buf+1, 0xFF, pad);
 	buf[1+pad] = 0x00;
 	memmove(buf+1+pad+1, asn1, n);
-	m = betomp(buf, len, nil);
+	m = betomp(buf, len, NULL);
 	free(buf);
 	return m;
 }

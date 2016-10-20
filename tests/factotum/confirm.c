@@ -28,7 +28,7 @@ confirmflush(Req *r)
 	for(l=(Req **)cusewait; *l; l=(Req **)(*l)->aux){
 		if(*l == r){
 			*l = r->aux;
-			if(r->aux == nil)
+			if(r->aux == NULL)
 				cuselast = l;
 			closereq(r);
 			break;
@@ -61,16 +61,16 @@ confirmwrite(char *s)
 	Req *r, **l;
 
 	a = _parseattr(s);
-	if(a == nil){
+	if(a == NULL){
 		werrstr("empty write");
 		return -1;
 	}
-	if((t = _strfindattr(a, "tag")) == nil){
+	if((t = _strfindattr(a, "tag")) == NULL){
 		werrstr("no tag");
 		return -1;
 	}
 	tag = strtoul(t, 0, 0);
-	if((ans = _strfindattr(a, "answer")) == nil){
+	if((ans = _strfindattr(a, "answer")) == NULL){
 		werrstr("no answer");
 		return -1;
 	}
@@ -82,18 +82,18 @@ confirmwrite(char *s)
 		werrstr("bad answer");
 		return -1;
 	}
-	r = nil;
+	r = NULL;
 	tagoff = -1;
 	for(l=(Req **)cusewait; *l; l=(Req **)(*l)->aux){
 		r = *l;
 		if(hastag(r->fid->aux, tag, &tagoff)){
 			*l = r->aux;
-			if(r->aux == nil)
+			if(r->aux == NULL)
 				cuselast = l;
 			break;
 		}
 	}
-	if(r == nil || tagoff == -1){
+	if(r == NULL || tagoff == -1){
 		werrstr("tag not found");
 		return -1;
 	}
@@ -126,7 +126,7 @@ confirmqueue(Req *r, Fsstate *fss)
 		return;
 	}
 	*cuselast = r;
-	r->aux = nil;
+	r->aux = NULL;
 	cuselast = (Req **)r->aux;
 }
 
@@ -150,7 +150,7 @@ needkeyflush(Req *r)
 	for(l=(Req **)needwait; *l; l=(Req **)(*l)->aux){
 		if(*l == r){
 			*l = r->aux;
-			if(r->aux == nil)
+			if(r->aux == NULL)
 				needlast = l;
 			closereq(r);
 			break;
@@ -168,26 +168,26 @@ needkeywrite(char *s)
 	Req *r, **l;
 
 	a = _parseattr(s);
-	if(a == nil){
+	if(a == NULL){
 		werrstr("empty write");
 		return -1;
 	}
-	if((t = _strfindattr(a, "tag")) == nil){
+	if((t = _strfindattr(a, "tag")) == NULL){
 		werrstr("no tag");
 		return -1;
 	}
 	tag = strtoul(t, 0, 0);
-	r = nil;
+	r = NULL;
 	for(l=(Req **)needwait; *l; l=(Req **)(*l)->aux){
 		r = *l;
 		if(r->tag == tag){
 			*l = r->aux;
-			if(r->aux == nil)
+			if(r->aux == NULL)
 				needlast = l;
 			break;
 		}
 	}
-	if(r == nil){
+	if(r == NULL){
 		werrstr("tag not found");
 		return -1;
 	}
@@ -206,7 +206,7 @@ needkeyqueue(Req *r, Fsstate *fss)
 	snprint(msg, sizeof msg, "needkey tag=%lu %s", r->tag, fss->keyinfo);
 	logbufappend(&needkeybuf, msg);
 	*needlast = r;
-	r->aux = nil;
+	r->aux = NULL;
 	needlast = (Req **)r->aux;
 	return 0;
 }

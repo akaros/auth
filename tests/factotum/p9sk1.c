@@ -81,7 +81,7 @@ p9skinit(Proto *p, Fsstate *fss)
 	Attr *attr;
 
 	if((iscli = isclient(_strfindattr(fss->attr, "role"))) < 0)
-		return failure(fss, nil);
+		return failure(fss, NULL);
 
 	s = emalloc(sizeof *s);
 	fss = fss;
@@ -107,7 +107,7 @@ p9skinit(Proto *p, Fsstate *fss)
 		s->tr.type = AuthTreq;
 		attr = setattr(_copyattr(fss->attr), "proto=p9sk1");
 		mkkeyinfo(&ki, fss, attr);
-		ki.user = nil;
+		ki.user = NULL;
 		ret = findkey(&k, &ki, "user? dom?");
 		_freeattr(attr);
 		if(ret != RpcOk){
@@ -222,7 +222,7 @@ p9skwrite(Fsstate *fss, void *a, uint n)
 		if(s->vers == 2)
 			memmove(s->cchal, s->tr.chal, CHALLEN);
 
-		if(s->key != nil)
+		if(s->key != NULL)
 			closekey(s->key);
 
 		attr = _delattr(_delattr(_copyattr(fss->attr), "role"), "user");
@@ -237,16 +237,16 @@ p9skwrite(Fsstate *fss, void *a, uint n)
 		 * We do the sysuser findkey second so that if we return RpcNeedkey,
 		 * the correct key information gets asked for.
 		 */
-		srvkey = nil;
+		srvkey = NULL;
 		s->speakfor = 0;
 		sret = RpcFailure;
-		if(user==nil || strcmp(user, fss->sysuser) == 0){
+		if(user==NULL || strcmp(user, fss->sysuser) == 0){
 			mkkeyinfo(&ki, fss, attr);
-			ki.user = nil;
+			ki.user = NULL;
 			sret = findkey(&srvkey, &ki,
 				"role=speakfor dom=%q user?", s->tr.authdom);
 		}
-		if(user != nil)
+		if(user != NULL)
 			attr = setattr(attr, "user=%q", user);
 		mkkeyinfo(&ki, fss, attr);
 		ret = findkey(&s->key, &ki,
@@ -277,7 +277,7 @@ p9skwrite(Fsstate *fss, void *a, uint n)
 		/* get tickets, from auth server or invent if we can */
 		if(gettickets(s, trbuf, tbuf) < 0){
 			_freeattr(attr);
-			return failure(fss, nil);
+			return failure(fss, NULL);
 		}
 
 		convM2T(tbuf, &s->t, (char*)s->key->priv);
@@ -352,13 +352,13 @@ p9skclose(Fsstate *fss)
 	State *s;
 
 	s = fss->ps;
-	if(s->secret != nil){
+	if(s->secret != NULL){
 		free(s->secret);
-		s->secret = nil;
+		s->secret = NULL;
 	}
-	if(s->key != nil){
+	if(s->key != NULL){
 		closekey(s->key);
-		s->key = nil;
+		s->key = NULL;
 	}
 	free(s);
 }
@@ -399,7 +399,7 @@ p9skaddkey(Key *k, int before)
 	if(s = _strfindattr(k->privattr, "!hex")){
 		if(hexparse(s, k->priv, 7) < 0){
 			free(k->priv);
-			k->priv = nil;
+			k->priv = NULL;
 			werrstr("malformed key data");
 			return -1;
 		}
@@ -408,7 +408,7 @@ p9skaddkey(Key *k, int before)
 	}else{
 		werrstr("no key data");
 		free(k->priv);
-		k->priv = nil;
+		k->priv = NULL;
 		return -1;
 	}
 	return replacekey(k, before);
@@ -426,11 +426,11 @@ getastickets(State *s, char *trbuf, char *tbuf)
 	int asfd, rv;
 	char *dom;
 
-	if((dom = _strfindattr(s->key->attr, "dom")) == nil){
+	if((dom = _strfindattr(s->key->attr, "dom")) == NULL){
 		werrstr("auth key has no domain");
 		return -1;
 	}
-	asfd = _authdial(nil, dom);
+	asfd = _authdial(NULL, dom);
 	if(asfd < 0)
 		return -1;
 	rv = _asgetticket(asfd, trbuf, tbuf);

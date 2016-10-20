@@ -103,7 +103,7 @@ rpcwrite(Req *r)
 	fss->rpc.iverb = classify(fss->rpc.verb, rpctab, nelem(rpctab));
 	r->ofcall.count = r->ifcall.count;
 	fss->pending = 1;
-	respond(r, nil);
+	respond(r, NULL);
 }
 
 static void
@@ -117,7 +117,7 @@ retstring(Req *r, Fsstate *fss, char *s)
 	memmove(r->ofcall.data, s, n);
 	r->ofcall.count = n;
 	fss->pending = 0;
-	respond(r, nil);
+	respond(r, NULL);
 	return;
 }
 
@@ -163,7 +163,7 @@ retrpc(Req *r, int ret, Fsstate *fss)
 int
 rdwrcheck(Req *r, Fsstate *fss)
 {
-	if(fss->ps == nil){
+	if(fss->ps == NULL){
 		retstring(r, fss, "error no current protocol");
 		return -1;
 	}
@@ -274,19 +274,19 @@ rpcread(Req *r)
 			flog("%d: implicit close due to second start; old attr '%A'", fss->seqnum, fss->attr);
 			if(fss->proto && fss->ps)
 				(*fss->proto->close)(fss);
-			fss->ps = nil;
-			fss->proto = nil;
+			fss->ps = NULL;
+			fss->proto = NULL;
 			_freeattr(fss->attr);
-			fss->attr = nil;
+			fss->attr = NULL;
 			fss->phase = Notstarted;
 		}	
 		attr = _parseattr(fss->rpc.arg);
-		if((p = _strfindattr(attr, "proto")) == nil){
+		if((p = _strfindattr(attr, "proto")) == NULL){
 			retstring(r, fss, "error did not specify proto");
 			_freeattr(attr);
 			break;
 		}
-		if((proto = findproto(p)) == nil){
+		if((proto = findproto(p)) == NULL){
 			snprint(fss->rpc.buf, Maxrpc, "error unknown protocol %q", p);
 			retstring(r, fss, fss->rpc.buf);
 			_freeattr(attr);
@@ -299,7 +299,7 @@ rpcread(Req *r)
 		rpcstartlog(attr, fss, ret);
 		if(ret != RpcOk){
 			_freeattr(fss->attr);
-			fss->attr = nil;
+			fss->attr = NULL;
 			fss->phase = Notstarted;
 		}
 		retrpc(r, ret, fss);
@@ -324,7 +324,7 @@ rpcread(Req *r)
 			else
 				r->ofcall.count = 3+count;
 			fss->pending = 0;
-			respond(r, nil);
+			respond(r, NULL);
 		}else
 			retrpc(r, ret, fss);
 		break;
@@ -352,14 +352,14 @@ rpcread(Req *r)
 		e = convAI2M(&fss->ai, (uint8_t*)r->ofcall.data+3,
 			     r->ifcall.count-3);
 		free(fss->ai.cap);
-		fss->ai.cap = nil;
-		if(e == nil){
+		fss->ai.cap = NULL;
+		if(e == NULL){
 			retstring(r, fss, "error read too small");
 			break;
 		}
 		r->ofcall.count = e - (uint8_t*)r->ofcall.data;
 		fss->pending = 0;
-		respond(r, nil);
+		respond(r, NULL);
 		break;
 
 	case Vattr:
@@ -418,7 +418,7 @@ ctlwrite(char *a, int atzero)
 		*p = '\0';
 	}
 
-	if((p = strchr(a, ' ')) == nil)
+	if((p = strchr(a, ' ')) == NULL)
 		p = "";
 	else
 		*p++ = '\0';
@@ -467,8 +467,8 @@ ctlwrite(char *a, int atzero)
 			}else
 				l = &(*l)->next;
 		}
-		*lprotos = nil;
-		if(protos == nil){
+		*lprotos = NULL;
+		if(protos == NULL){
 			werrstr("key without protos");
 			_freeattr(attr);
 			return -1;
@@ -484,17 +484,17 @@ ctlwrite(char *a, int atzero)
 			}else
 				l = &(*l)->next;
 		}
-		*lpriv = nil;
+		*lpriv = NULL;
 
 		/* add keys */
 		ret = 0;
 		for(pa=protos; pa; pa=pa->next){
-			if((proto = findproto(pa->val)) == nil){
+			if((proto = findproto(pa->val)) == NULL){
 				werrstr("unknown proto %s", pa->val);
 				ret = -1;
 				continue;
 			}
-			if(proto->addkey == nil){
+			if(proto->addkey == NULL){
 				werrstr("proto %s doesn't take keys", proto->name);
 				ret = -1;
 				continue;

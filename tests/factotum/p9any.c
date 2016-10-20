@@ -69,7 +69,7 @@ p9anyinit(Proto* p, Fsstate *fss)
 	State *s;
 
 	if((iscli = isclient(_strfindattr(fss->attr, "role"))) < 0)
-		return failure(fss, nil);
+		return failure(fss, NULL);
 
 	s = emalloc(sizeof *s);
 	fss = fss;
@@ -92,10 +92,10 @@ p9anyclose(Fsstate *fss)
 	s = fss->ps;
 	if(s->subproto && s->subfss.ps && s->subproto->close)
 		(*s->subproto->close)(&s->subfss);
-	s->subproto = nil;
-	s->substate = nil;
+	s->subproto = NULL;
+	s->substate = NULL;
 	s_free(s->subdom);
-	s->subdom = nil;
+	s->subdom = NULL;
 	s->keyasked = 0;
 	memset(&s->subfss, 0, sizeof s->subfss);
 	free(s);
@@ -165,14 +165,14 @@ p9anyread(Fsstate *fss, void *a, uint *n)
 	case SHaveProtos:
 		m = 0;
 		negstr = s_new();
-		mkkeyinfo(&ki, fss, nil);
-		ki.attr = nil;
+		mkkeyinfo(&ki, fss, NULL);
+		ki.attr = NULL;
 		ki.noconf = 1;
-		ki.user = nil;
+		ki.user = NULL;
 		for(i=0; i<nelem(negotiable); i++){
 			anew = setattr(_copyattr(fss->attr), "proto=%q dom?", negotiable[i]->name);
 			ki.attr = anew;
-			for(ki.skip=0; findkey(&k, &ki, nil)==RpcOk; ki.skip++){
+			for(ki.skip=0; findkey(&k, &ki, NULL)==RpcOk; ki.skip++){
 				if(m++)
 					s_append(negstr, " ");
 				s_append(negstr, negotiable[i]->name);
@@ -233,7 +233,7 @@ static char*
 getdom(char *p)
 {
 	p = strchr(p, '@');
-	if(p == nil)
+	if(p == NULL)
 		return "";
 	return p+1;
 }
@@ -252,7 +252,7 @@ findneg(char *name)
 	for(i=0; i<nelem(negotiable); i++)
 		if(strncmp(negotiable[i]->name, name, len) == 0 && negotiable[i]->name[len] == 0)
 			return negotiable[i];
-	return nil;
+	return NULL;
 }
 
 static int
@@ -291,19 +291,19 @@ p9anywrite(Fsstate *fss, void *va, uint n)
 		anew = _delattr(_delattr(_copyattr(fss->attr), "proto"), "role");
 		anewsf = _delattr(_copyattr(anew), "user");
 		user = _strfindattr(anew, "user");
-		k = nil;
-		p = nil;
-		dom = nil;
+		k = NULL;
+		p = NULL;
+		dom = NULL;
 		for(i=(s->version==1?0:1); i<m; i++){
 			p = findneg(token[i]);
-			if(p == nil)
+			if(p == NULL)
 				continue;
 			dom = getdom(token[i]);
 			ret = RpcFailure;
-			mkkeyinfo(&ki, fss, nil);
-			if(user==nil || strcmp(user, fss->sysuser)==0){
+			mkkeyinfo(&ki, fss, NULL);
+			if(user==NULL || strcmp(user, fss->sysuser)==0){
 				ki.attr = anewsf;
-				ki.user = nil;
+				ki.user = NULL;
 				ret = findkey(&k, &ki, "proto=%q dom=%q role=speakfor %s",
 						p->name, dom, p->keyprompt);
 			}
@@ -327,15 +327,15 @@ p9anywrite(Fsstate *fss, void *va, uint n)
 		 * no acceptable key, go through the proto@domains one at a time.
 		 */
 		asking = 0;
-		if(k == nil){
+		if(k == NULL){
 			while(!asking && s->keyasked < m){
 				p = findneg(token[s->keyasked]);
-				if(p == nil){
+				if(p == NULL){
 					s->keyasked++;
 					continue;
 				}
 				dom = getdom(token[s->keyasked]);
-				mkkeyinfo(&ki, fss, nil);
+				mkkeyinfo(&ki, fss, NULL);
 				ki.attr = anew;
 				ret = findkey(&k, &ki,
 					"proto=%q dom=%q role=client %s",
@@ -347,13 +347,13 @@ p9anywrite(Fsstate *fss, void *va, uint n)
 				}
 			}
 		}
-		if(k == nil){
+		if(k == NULL){
 			free(a);
 			_freeattr(anew);
 			if(asking)
 				return RpcNeedkey;
 			else if(s->keyasked)
-				return failure(fss, nil);
+				return failure(fss, NULL);
 			else
 				return failure(fss, Enegotiation);
 		}
@@ -379,14 +379,14 @@ p9anywrite(Fsstate *fss, void *va, uint n)
 			return failure(fss, Ebadarg);
 		}
 		p = findneg(token[0]);
-		if(p == nil){
+		if(p == NULL){
 			free(a);
 			return failure(fss, Enegotiation);
 		}
 		attr = _delattr(_copyattr(fss->attr), "proto");
-		mkkeyinfo(&ki, fss, nil);
+		mkkeyinfo(&ki, fss, NULL);
 		ki.attr = attr;
-		ki.user = nil;
+		ki.user = NULL;
 		ret = findkey(&k, &ki, "proto=%q dom=%q role=server", token[0], token[1]);
 		free(a);
 		_freeattr(attr);

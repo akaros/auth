@@ -86,7 +86,7 @@ p9crinit(Proto *p, Fsstate *fss)
 	Keyinfo ki;
 
 	if((iscli = isclient(_strfindattr(fss->attr, "role"))) < 0)
-		return failure(fss, nil);
+		return failure(fss, NULL);
 	
 	s = emalloc(sizeof(*s));
 	s->asfd = -1;
@@ -104,7 +104,7 @@ p9crinit(Proto *p, Fsstate *fss)
 		if(p == &p9cr)
 			attr = setattr(_copyattr(fss->attr), "proto=p9sk1");
 		else
-			attr = nil;
+			attr = NULL;
 		ret = findkey(&s->key, mkkeyinfo(&ki, fss, attr),
 			"role=client %s", p->keyprompt);
 		_freeattr(attr);
@@ -118,7 +118,7 @@ p9crinit(Proto *p, Fsstate *fss)
 			free(s);
 			return ret;
 		}
-		if((user = _strfindattr(fss->attr, "user")) == nil){
+		if((user = _strfindattr(fss->attr, "user")) == NULL){
 			free(s);
 			return failure(fss, "no user name specified in start msg");
 		}
@@ -131,7 +131,7 @@ p9crinit(Proto *p, Fsstate *fss)
 		ret = getchal(s, fss);
 		if(ret != RpcOk){
 			p9crclose(fss);	/* frees s */
-			fss->ps = nil;
+			fss->ps = NULL;
 		}
 	}
 	fss->phasename = phasenames;
@@ -180,7 +180,7 @@ p9response(Fsstate *fss, State *s)
 	char *pw;
 
 	pw = _strfindattr(s->key->privattr, "!password");
-	if(pw == nil)
+	if(pw == NULL)
 		return failure(fss, "vncresponse cannot happen");
 	passtokey(key, pw);
 	memset(buf, 0, 8);
@@ -241,7 +241,7 @@ vncresponse(Fsstate* f, State *s)
 	DESstate des;
 
 	memmove(s->resp, s->chal, sizeof s->chal);
-	setupDESstate(&des, s->key->priv, nil);
+	setupDESstate(&des, s->key->priv, NULL);
 	desECBencrypt((uint8_t*)s->resp, s->challen, &des);
 	s->resplen = s->challen;
 	return RpcOk;
@@ -289,7 +289,7 @@ p9crwrite(Fsstate *fss, void *va, uint n)
 
 		/* get ticket plus authenticator from auth server */
 		if(_asrdresp(s->asfd, tbuf, TICKETLEN+AUTHENTLEN) < 0)
-			return failure(fss, nil);
+			return failure(fss, NULL);
 
 		/* check ticket */
 		convM2T(tbuf, &s->t, s->key->priv);
@@ -310,7 +310,7 @@ p9crwrite(Fsstate *fss, void *va, uint n)
 		fss->ai.cuid = s->t.cuid;
 		fss->ai.suid = s->t.suid;
 		fss->ai.nsecret = 0;
-		fss->ai.secret = nil;
+		fss->ai.secret = NULL;
 		fss->phase = Established;
 		return RpcOk;
 	}
@@ -328,7 +328,7 @@ getchal(State *s, Fsstate *fss)
 	convTR2M(&s->tr, trbuf);
 
 	/* get challenge from auth server */
-	s->asfd = _authdial(nil, _strfindattr(s->key->attr, "dom"));
+	s->asfd = _authdial(NULL, _strfindattr(s->key->attr, "dom"));
 	if(s->asfd < 0)
 		return failure(fss, Easproto);
 	if(write(s->asfd, trbuf, TICKREQLEN) != TICKREQLEN)
@@ -337,7 +337,7 @@ getchal(State *s, Fsstate *fss)
 	if(n <= 0){
 		if(n == 0)
 			werrstr("_asrdresp short read");
-		return failure(fss, nil);
+		return failure(fss, NULL);
 	}
 	s->challen = n;
 	fss->phase = SHaveChal;
